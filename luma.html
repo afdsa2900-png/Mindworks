@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#05081d">
+  <meta name="description" content="Luma Leap — a fast neon 2D platform adventure.">
+  <title>Luma Leap</title>
+  <style>
+    :root{--navy:#05081d;--cyan:#54f4ff;--violet:#9a6cff;--gold:#ffd166;--coral:#ff5d7a;--white:#f7fbff}
+    *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--navy)}
+    body{color:var(--white);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none}
+    button{color:inherit;font:inherit}button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+    #game{position:relative;width:100vw;height:100dvh;min-height:360px;overflow:hidden;isolation:isolate;touch-action:none;background:#030515}
+    #game:after{position:absolute;inset:0;z-index:2;pointer-events:none;content:"";background:radial-gradient(circle at 50% 45%,transparent 35%,rgba(1,3,17,.36) 100%)}
+    canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+    header{position:absolute;top:max(15px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));left:max(16px,env(safe-area-inset-left));z-index:10;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+    .brand{display:flex;align-items:center;gap:9px;font-size:clamp(15px,2.3vw,32px);font-weight:900;letter-spacing:.08em;text-shadow:0 0 18px rgba(84,244,255,.78)}
+    .brand-mark{width:15px;height:15px;border:3px solid var(--cyan);border-radius:4px;box-shadow:0 0 15px var(--cyan),inset 0 0 8px var(--cyan);transform:rotate(45deg)}
+    .stats{display:flex;align-items:center;gap:7px;pointer-events:auto}.pill,.icon{height:42px;border:1px solid rgba(84,244,255,.45);border-radius:14px;background:rgba(6,11,35,.76);box-shadow:inset 0 0 18px rgba(84,244,255,.06),0 8px 26px rgba(0,0,0,.22);backdrop-filter:blur(12px)}
+    .pill{display:flex;min-width:74px;align-items:center;justify-content:center;gap:7px;padding:0 12px;font-size:16px;font-weight:900}.hearts{gap:3px}.heart{color:#4b5270;font-size:19px}.heart.on{color:var(--coral);filter:drop-shadow(0 0 6px rgba(255,93,122,.8))}
+    .orb-icon{width:14px;height:14px;border:3px solid #fff2a9;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+    .icon{width:42px;padding:0;cursor:pointer;font-size:17px;font-weight:900}.icon:hover{border-color:var(--cyan);background:rgba(15,28,66,.9)}
+    .overlay{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center}.hidden{display:none!important}
+    .menu{flex-direction:column;padding:85px 22px 92px;text-align:center}.eyebrow,.kicker{color:var(--cyan);font-size:clamp(9px,1.1vw,14px);font-weight:900;letter-spacing:.22em;text-shadow:0 0 12px rgba(84,244,255,.62)}
+    h1{max-width:780px;margin:10px 0 7px;font-size:clamp(35px,5.7vw,78px);font-weight:900;letter-spacing:-.055em;line-height:.98;text-shadow:0 12px 36px rgba(0,0,0,.38)}
+    .menu p,.card p{max-width:560px;margin:8px 0 22px;color:#cbd5f5;font-size:clamp(13px,1.5vw,18px);line-height:1.5}
+    .best{margin:-8px 0 18px;padding:7px 12px;border:1px solid rgba(255,209,102,.42);border-radius:999px;color:#fff0ae;background:rgba(41,30,51,.62);font-size:10px;font-weight:900;letter-spacing:.12em}
+    .primary{display:flex;min-width:min(300px,76vw);height:76px;align-items:center;justify-content:center;gap:18px;border:2px solid rgba(255,255,255,.92);border-radius:23px;background:linear-gradient(120deg,#25dfff,#486dff 48%,#a54fff);box-shadow:0 0 0 5px rgba(84,244,255,.12),0 0 38px rgba(84,244,255,.48),0 11px 0 #24265f;cursor:pointer;font-size:clamp(24px,3.2vw,40px);font-weight:1000;letter-spacing:.03em;transition:transform .12s,box-shadow .12s}.primary:active{transform:translateY(7px);box-shadow:0 0 0 5px rgba(84,244,255,.1),0 0 28px rgba(84,244,255,.38),0 4px 0 #24265f}
+    .primary.small{min-width:235px;height:62px;margin-top:6px;font-size:21px;border-radius:18px}.hint{margin-top:26px;color:#8e9bc6;font-size:11px;font-weight:800;letter-spacing:.08em}.hint b{color:#dce6ff}
+    .panel{background:rgba(3,5,21,.58);backdrop-filter:blur(8px)}.card{display:flex;width:min(480px,86vw);max-height:86vh;flex-direction:column;align-items:center;padding:34px 28px;border:1px solid rgba(84,244,255,.36);border-radius:28px;background:linear-gradient(160deg,rgba(15,25,62,.96),rgba(7,10,31,.96));box-shadow:0 0 60px rgba(84,244,255,.17);text-align:center}.card h2{margin:8px 0 5px;font-size:clamp(30px,4vw,50px);letter-spacing:-.04em}.text-btn{margin-top:17px;border:0;background:none;color:#9cb1e9;text-decoration:underline;cursor:pointer}.danger{color:var(--coral)}
+    #portal-note{position:absolute;z-index:7;right:20px;bottom:116px;max-width:230px;padding:10px 14px;border:1px solid rgba(255,209,102,.45);border-radius:12px;background:rgba(13,13,42,.82);color:#fff2b0;font-size:12px;font-weight:800;text-align:center}
+    #controls{position:absolute;right:max(24px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));left:max(24px,env(safe-area-inset-left));z-index:12;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none;opacity:0;transition:opacity .2s}#controls.on{opacity:1}.move{display:flex;gap:12px}.control{width:68px;height:68px;border:2px solid rgba(84,244,255,.67);border-radius:22px;background:rgba(7,12,37,.7);box-shadow:inset 0 0 16px rgba(84,244,255,.1),0 5px 18px rgba(0,0,0,.28);font-size:31px;font-weight:900;pointer-events:auto;touch-action:none}.control:active,.control.pressed{background:rgba(45,101,166,.85);transform:scale(.94)}.jump{width:78px;height:78px;border-radius:50%;border-color:rgba(154,108,255,.78);background:rgba(74,40,130,.65);font-size:35px}
+    #rotate{position:absolute;z-index:20;inset:0;display:none;align-items:center;justify-content:center;padding:30px;background:#05081d;color:#dce6ff;text-align:center;font-weight:800}
+    @media (orientation:portrait) and (max-width:700px){#rotate{display:flex}}
+    @media (max-height:500px){header{top:9px}.brand{font-size:14px}.brand-mark{width:12px;height:12px}.pill,.icon{height:36px;border-radius:11px}.pill{min-width:62px;padding:0 9px;font-size:14px}.icon{width:36px}.menu{padding:58px 20px 68px}.menu h1{font-size:36px;margin:6px 0 3px}.menu p{font-size:12px;margin:4px 0 14px}.primary{height:56px;min-width:240px;border-radius:18px;font-size:23px;box-shadow:0 0 0 4px rgba(84,244,255,.12),0 0 28px rgba(84,244,255,.42),0 7px 0 #24265f}.hint{margin-top:16px}.control{width:58px;height:58px;border-radius:18px}.jump{width:66px;height:66px}.card{padding:22px}.card h2{font-size:30px}.card p{margin:4px 0 10px}}
+  </style>
+</head>
+<body>
+  <main id="game" aria-label="Luma Leap platform game">
+    <canvas id="canvas" aria-hidden="true"></canvas>
+    <header>
+      <div class="brand"><span class="brand-mark"></span><span>LUMA LEAP</span></div>
+      <div class="stats">
+        <div class="pill hearts" aria-label="Lives"><span class="heart on">♥</span><span class="heart on">♥</span><span class="heart on">♥</span></div>
+        <div class="pill"><span class="orb-icon"></span><span id="orb-count">0/8</span></div>
+        <button id="sound" class="icon" aria-label="Toggle sound">♪</button>
+        <button id="pause" class="icon hidden" aria-label="Pause">Ⅱ</button>
+      </div>
+    </header>
+    <section id="menu" class="overlay menu">
+      <div class="eyebrow">ONE BRIGHT CUBE. ONE NEON CITY.</div>
+      <h1>Leap into the light.</h1>
+      <p>Collect 8 energy orbs, dodge the patrol drones, and reach the portal.</p>
+      <div id="best-menu" class="best hidden"></div>
+      <button id="play" class="primary">PLAY <span>→</span></button>
+      <div class="hint"><b>← → / A D</b> move &nbsp;·&nbsp; <b>↑ / SPACE</b> jump</div>
+    </section>
+    <section id="modal" class="overlay panel hidden">
+      <div class="card">
+        <div id="modal-kicker" class="kicker">CITY PAUSED</div>
+        <h2 id="modal-title">Catch your glow.</h2>
+        <p id="modal-copy"></p>
+        <div id="best-result" class="best hidden"></div>
+        <button id="modal-main" class="primary small">RESUME</button>
+        <button id="restart" class="text-btn">Restart level</button>
+      </div>
+    </section>
+    <div id="portal-note" class="hidden"></div>
+    <div id="controls">
+      <div class="move"><button class="control" data-dir="left" aria-label="Move left">←</button><button class="control" data-dir="right" aria-label="Move right">→</button></div>
+      <button id="jump" class="control jump" aria-label="Jump">↑</button>
+    </div>
+    <div id="rotate">↻&nbsp;&nbsp; Rotate your phone sideways to play</div>
+  </main>
+  <script>
+  (()=>{
+    'use strict';
+    const canvas=document.querySelector('#canvas'),ctx=canvas.getContext('2d');
+    const ui={menu:document.querySelector('#menu'),modal:document.querySelector('#modal'),play:document.querySelector('#play'),pause:document.querySelector('#pause'),sound:document.querySelector('#sound'),controls:document.querySelector('#controls'),orbs:document.querySelector('#orb-count'),hearts:[...document.querySelectorAll('.heart')],note:document.querySelector('#portal-note'),bestMenu:document.querySelector('#best-menu'),bestResult:document.querySelector('#best-result'),kicker:document.querySelector('#modal-kicker'),title:document.querySelector('#modal-title'),copy:document.querySelector('#modal-copy'),main:document.querySelector('#modal-main'),restart:document.querySelector('#restart')};
+    const W=3740,H=720,PW=42,PH=52,NEED=8;
+    const platforms=[[-180,620,700,120],[630,540,220,44],[930,620,450,120],[1460,535,220,44],[1760,620,260,120],[2100,510,230,44],[2410,620,400,120],[2890,535,200,44],[3160,620,640,120]];
+    const orbLayout=[[360,555],[665,475],[790,455],[1050,555],[1320,515],[1515,465],[1630,440],[1860,550],[2155,440],[2260,420],[2515,545],[2735,520],[2945,465],[3035,445],[3290,555]];
+    const droneLayout=[[1120,566,1030,1280,78],[1850,566,1790,1940,92],[2560,566,2470,2720,88]];
+    let mode='menu',soundOn=true,audio=null,dims={w:innerWidth,h:innerHeight,dpr:1},input={left:false,right:false,jump:0},r=createRun(),last=0,best=Number(localStorage.getItem('luma-leap-best'))||0;
+    function createRun(){return{p:{x:110,y:480,vx:0,vy:0,ground:false,face:1,lives:3,inv:0},orbs:orbLayout.map(([x,y])=>({x,y,taken:false})),drones:droneLayout.map(([x,y,min,max,speed])=>({x,y,min,max,speed,dir:1,alive:true})),got:0,cam:0,time:0,checkpoint:110,flash:0}}
+    function pseudo(s){const v=Math.sin(s*91.733)*43758.5453;return v-Math.floor(v)}
+    function rr(x,y,w,h,rad){const q=Math.min(rad,w/2,h/2);ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath()}
+    function hit(ax,ay,aw,ah,bx,by,bw,bh){return ax<bx+bw&&ax+aw>bx&&ay<by+bh&&ay+ah>by}
+    function resize(){const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*d);canvas.height=Math.round(innerHeight*d);dims={w:innerWidth,h:innerHeight,dpr:d}}
+    function tone(f,d,type='sine',vol=.03){if(!soundOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain(),n=audio.currentTime;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(audio.destination);o.start();o.stop(n+d)}catch(e){soundOn=false;ui.sound.textContent='×'}}
+    function showBest(){if(best){ui.bestMenu.textContent='BEST RUN · '+best.toFixed(1)+'s';ui.bestMenu.classList.remove('hidden')}else ui.bestMenu.classList.add('hidden')}
+    function setMode(next){mode=next;ui.menu.classList.toggle('hidden',next!=='menu');ui.modal.classList.toggle('hidden',!['paused','won','gameover'].includes(next));ui.controls.classList.toggle('on',next==='playing');ui.pause.classList.toggle('hidden',next==='menu');ui.pause.textContent=next==='paused'?'▶':'Ⅱ';ui.note.classList.add('hidden');if(next==='paused')modal('CITY PAUSED','Catch your glow.','', 'RESUME',false);if(next==='won')modal('PORTAL UNLOCKED','City crossed!','You gathered the light in '+r.time.toFixed(1)+' seconds.','PLAY AGAIN',true);if(next==='gameover')modal('SIGNAL LOST','One more leap?','The rooftops are ready when you are.','RETRY',false,true);updateHud()}
+    function modal(k,t,c,b,show,dead){ui.kicker.textContent=k;ui.kicker.classList.toggle('danger',!!dead);ui.title.textContent=t;ui.copy.textContent=c;ui.main.textContent=b;ui.restart.classList.toggle('hidden',mode!=='paused');ui.bestResult.classList.toggle('hidden',!show||!best);if(show&&best)ui.bestResult.textContent='PERSONAL BEST · '+best.toFixed(1)+'s'}
+    function start(){r=createRun();input={left:false,right:false,jump:0};last=performance.now();setMode('playing');tone(520,.07)}
+    function togglePause(){if(mode==='playing')setMode('paused');else if(mode==='paused'){last=performance.now();setMode('playing')}}
+    function updateHud(){ui.orbs.textContent=Math.min(r.got,NEED)+'/'+NEED;ui.hearts.forEach((h,i)=>h.classList.toggle('on',i<r.p.lives));if(mode==='playing'&&r.got<NEED&&r.p.x>3290){ui.note.textContent='Collect '+(NEED-r.got)+' more orb'+(NEED-r.got===1?'':'s')+' to open the portal';ui.note.classList.remove('hidden')}else ui.note.classList.add('hidden')}
+    function lose(){const p=r.p;if(p.inv>0)return;p.lives--;r.flash=.28;tone(135,.2,'sawtooth',.045);if(p.lives<=0){setMode('gameover');return}p.x=r.checkpoint;p.y=430;p.vx=p.vy=0;p.inv=1.4;r.cam=Math.max(0,p.x-140);updateHud()}
+    function update(dt){if(mode!=='playing')return;const p=r.p;r.time+=dt;r.flash=Math.max(0,r.flash-dt);p.inv=Math.max(0,p.inv-dt);const dir=+input.right-+input.left,target=dir*330;p.vx+=(target-p.vx)*Math.min(1,dt*12);if(!dir)p.vx*=Math.pow(.0008,dt);if(dir)p.face=dir;input.jump=Math.max(0,input.jump-dt);if(input.jump>0&&p.ground){p.vy=-735;p.ground=false;input.jump=0;tone(440,.07,'square',.018)}const oldY=p.y,oldBottom=oldY+PH;p.x=Math.max(0,Math.min(W-PW,p.x+p.vx*dt));p.vy+=1940*dt;p.y+=p.vy*dt;p.ground=false;for(const [x,y,w] of platforms){if(p.vy>=0&&oldBottom<=y+8&&p.y+PH>=y&&p.x+PW>x+8&&p.x<x+w-8){p.y=y-PH;p.vy=0;p.ground=true}}if(p.y>H+130){lose();return}if(p.x>930)r.checkpoint=Math.max(r.checkpoint,980);if(p.x>1760)r.checkpoint=Math.max(r.checkpoint,1800);if(p.x>2410)r.checkpoint=Math.max(r.checkpoint,2450);if(p.x>3160)r.checkpoint=Math.max(r.checkpoint,3200);for(const o of r.orbs)if(!o.taken&&Math.hypot(p.x+PW/2-o.x,p.y+PH/2-o.y)<40){o.taken=true;r.got++;tone(730+Math.min(r.got,NEED)*28,.09);updateHud()}for(const d of r.drones){if(!d.alive)continue;d.x+=d.speed*d.dir*dt;if(d.x<=d.min||d.x>=d.max){d.x=Math.max(d.min,Math.min(d.max,d.x));d.dir*=-1}if(hit(p.x,p.y,PW,PH,d.x-23,d.y-20,46,40)){if(p.vy>150&&oldBottom<=d.y+5){d.alive=false;p.vy=-460;tone(210,.12,'square',.025)}else{lose();return}}}if(r.got>=NEED&&hit(p.x,p.y,PW,PH,3500,500,90,120)){if(!best||r.time<best){best=r.time;localStorage.setItem('luma-leap-best',best)}showBest();tone(980,.32);setMode('won')}const scale=dims.h/H,vis=dims.w/scale,targetCam=p.x-vis*.34;r.cam+=(targetCam-r.cam)*Math.min(1,dt*5.5);r.cam=Math.max(0,Math.min(Math.max(0,W-vis),r.cam))}
+    function skyline(w,h,cam,par,base,color,glow,off){const shift=(cam*par)%96;ctx.fillStyle=color;for(let i=-2;i<Math.ceil(w/78)+3;i++){const seed=i+Math.floor(cam*par/96)+off,bw=52+pseudo(seed)*34,bh=70+pseudo(seed+13)*190,x=i*96-shift,y=base-bh;ctx.fillRect(x,y,bw,h-y);ctx.fillStyle=glow;for(let row=0;row<bh/30;row++)for(let col=0;col<2;col++)if(pseudo(seed*17+row*5+col)>.56){ctx.globalAlpha=.28+pseudo(seed+row+col)*.38;ctx.fillRect(x+12+col*22,y+18+row*29,6,10)}ctx.globalAlpha=1;ctx.fillStyle=color}}
+    function draw(){const {w,h,dpr}=dims;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#05081d');sky.addColorStop(.58,'#111a49');sky.addColorStop(1,'#2a1657');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);for(let i=0;i<76;i++){const x=(pseudo(i+31)*w-r.cam*(.012+i%3*.008)+w*2)%w,y=pseudo(i+97)*h*.62;ctx.globalAlpha=.52+Math.sin(r.time*1.6+i)*.24;ctx.fillStyle=i%7===0?'#9a6cff':'#d8f8ff';ctx.fillRect(x,y,i%9===0?2.2:1.2,i%9===0?2.2:1.2)}ctx.globalAlpha=1;skyline(w,h,r.cam,.055,h*.76,'#12183d','#4054a8',4);skyline(w,h,r.cam,.12,h*.86,'#111434','#a955ff',37);skyline(w,h,r.cam,.2,h*.96,'#090d24','#38e9ff',81);const s=h/H;ctx.save();ctx.scale(s,s);ctx.translate(-r.cam,0);for(const [x,y,pw,ph] of platforms){const g=ctx.createLinearGradient(0,y,0,y+ph);g.addColorStop(0,'#172a52');g.addColorStop(.18,'#111a39');g.addColorStop(1,'#080d22');ctx.fillStyle=g;ctx.fillRect(x,y,pw,ph);ctx.shadowColor='#54f4ff';ctx.shadowBlur=18;ctx.fillStyle='#54f4ff';ctx.fillRect(x,y,pw,5);ctx.shadowBlur=0;ctx.fillStyle='rgba(154,108,255,.28)';for(let q=x+22;q<x+pw-10;q+=58){ctx.fillRect(q,y+22,28,6);ctx.fillRect(q+8,y+36,14,4)}}for(const o of r.orbs){if(o.taken)continue;const bob=Math.sin(r.time*3+o.x*.01)*7;ctx.save();ctx.translate(o.x,o.y+bob);ctx.shadowColor='#ffd166';ctx.shadowBlur=24;ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(0,0,12,0,Math.PI*2);ctx.fill();ctx.shadowBlur=8;ctx.strokeStyle='#fff5b9';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.stroke();ctx.restore()}for(const d of r.drones){if(!d.alive)continue;ctx.save();ctx.translate(d.x,d.y+Math.sin(r.time*4+d.x*.02)*3);ctx.shadowColor='#ff5d7a';ctx.shadowBlur=16;ctx.fillStyle='#20264c';rr(-24,-19,48,38,15);ctx.fill();ctx.fillStyle='#ff5d7a';rr(-12,-5,24,11,5);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#6ef6ff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-25,-2);ctx.lineTo(-37,7);ctx.moveTo(25,-2);ctx.lineTo(37,7);ctx.stroke();ctx.restore()}const open=r.got>=NEED;ctx.save();ctx.translate(3545,560);ctx.shadowColor=open?'#54f4ff':'#ff5d7a';ctx.shadowBlur=open?32:12;ctx.strokeStyle=open?'#54f4ff':'#ff5d7a';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,44,Math.PI,0);ctx.lineTo(44,60);ctx.moveTo(-44,60);ctx.lineTo(-44,0);ctx.stroke();ctx.globalAlpha=open?.34+Math.sin(r.time*4)*.12:.14;ctx.fillStyle=open?'#54f4ff':'#ff5d7a';ctx.fillRect(-35,0,70,60);ctx.restore();ctx.globalAlpha=1;const p=r.p;if(p.inv<=0||Math.floor(p.inv*12)%2===0){ctx.save();ctx.translate(p.x+PW/2,p.y+PH/2);ctx.scale(p.face,1);ctx.shadowColor='#54f4ff';ctx.shadowBlur=26;const g=ctx.createLinearGradient(-22,-26,22,26);g.addColorStop(0,'#f7fbff');g.addColorStop(.45,'#9af8ff');g.addColorStop(1,'#54bfff');ctx.fillStyle=g;rr(-21,-26,42,52,12);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#07112e';ctx.beginPath();ctx.ellipse(-7,-3,3,5,0,0,Math.PI*2);ctx.ellipse(8,-3,3,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#07112e';ctx.lineWidth=2;ctx.beginPath();ctx.arc(1,5,7,.2,Math.PI-.2);ctx.stroke();ctx.restore()}ctx.restore();if(r.flash>0){ctx.globalAlpha=r.flash*1.7;ctx.fillStyle='#ff315d';ctx.fillRect(0,0,w,h);ctx.globalAlpha=1}}
+    function loop(t){const dt=Math.min(.033,Math.max(0,(t-last)/1000));last=t;update(dt);draw();requestAnimationFrame(loop)}
+    function key(e,on){const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' '].includes(k))e.preventDefault();if(k==='arrowleft'||k==='a')input.left=on;if(k==='arrowright'||k==='d')input.right=on;if(on&&(k==='arrowup'||k==='w'||k===' '))input.jump=.2;if(on&&k==='enter'&&mode!=='playing')start();if(on&&(k==='escape'||k==='p'))togglePause()}
+    addEventListener('resize',resize);addEventListener('keydown',e=>key(e,true),{passive:false});addEventListener('keyup',e=>key(e,false));addEventListener('blur',()=>{input.left=input.right=false;if(mode==='playing')togglePause()});
+    ui.play.onclick=start;ui.pause.onclick=togglePause;ui.sound.onclick=()=>{soundOn=!soundOn;ui.sound.textContent=soundOn?'♪':'×';if(soundOn)tone(620,.06)};ui.main.onclick=()=>mode==='paused'?togglePause():start();ui.restart.onclick=start;
+    document.querySelectorAll('[data-dir]').forEach(b=>{const dir=b.dataset.dir,on=e=>{e.preventDefault();input[dir]=true;b.classList.add('pressed')},off=()=>{input[dir]=false;b.classList.remove('pressed')};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});const jump=document.querySelector('#jump');jump.addEventListener('pointerdown',e=>{e.preventDefault();input.jump=.2;jump.classList.add('pressed')});['pointerup','pointercancel','pointerleave'].forEach(x=>jump.addEventListener(x,()=>jump.classList.remove('pressed')));
+    resize();showBest();updateHud();requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
